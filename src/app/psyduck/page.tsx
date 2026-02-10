@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+
 import Psyduck from "@/components/Psyduck";
 import TextBlock from "@/components/TexBlock";
 import Button from "@/components/Button";
+
 import { COPY } from "@/lib/copy";
 import { TIMING } from "@/lib/timings";
 
@@ -25,17 +27,30 @@ export default function PsyduckPage() {
     }
   };
 
+  const isLastStep = step === COPY.psyduck.lines.length - 1;
+
   return (
-    <main className="h-screen flex flex-col items-center justify-center gap-8 px-6">
-      <TextBlock text={COPY.psyduck.lines[step]} delay={TIMING.short} />
+    <main className="min-h-screen flex flex-col px-6 text-center">
+      {/* TOP SPACER */}
+      <div className="h-16" />
 
-      <Psyduck onClick={handleClick} />
+      {/* CONTENT (TEXT + PSYDUCK) */}
+      <div className="flex flex-col items-center align-content-start gap-4 min-h-75">
+        <TextBlock text={COPY.psyduck.lines[step]} delay={TIMING.short} />
 
-      {step === COPY.psyduck.lines.length - 1 && (
-        <Button onClick={() => router.push("/eevee")}>
-          {COPY.psyduck.cta}
-        </Button>
-      )}
+        <Psyduck onClick={handleClick} />
+      </div>
+
+      {/* ACTION AREA */}
+      <div className="flex-1 flex items-start justify-center min-h-20">
+        {isLastStep ? (
+          <Button onClick={() => router.push("/eevee")}>
+            {COPY.psyduck.cta}
+          </Button>
+        ) : (
+          <div className="h-12" />
+        )}
+      </div>
     </main>
   );
 }

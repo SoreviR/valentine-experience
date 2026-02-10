@@ -11,17 +11,21 @@ export default function FocusPage() {
   const router = useRouter();
 
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen px-6 text-center gap-12">
-      {/* INTRO */}
-      <TextBlock text={COPY.focus.intro} />
+    <main className="min-h-screen flex flex-col px-6 text-center">
+      {/* TOP */}
+      <div className="flex-1" />
+      {/* CONTENT */}
+      <div className="flex flex-col items-center gap-4 min-h-65">
+        <TextBlock text={COPY.focus.intro} />
+        <TextBlock text={COPY.focus.body} />
+      </div>
 
-      {/* BODY */}
-      <TextBlock text={COPY.focus.body} />
-
-      {/* CONTINUE */}
-      <Button onClick={() => router.push("/reward")}>
-        {COPY.focus.continue}
-      </Button>
+      {/* ACTION */}
+      <div className="flex-1 flex items-start justify-center min-h-20">
+        <Button onClick={() => router.push("/reward")}>
+          {COPY.focus.continue}
+        </Button>
+      </div>
     </main>
   );
 }

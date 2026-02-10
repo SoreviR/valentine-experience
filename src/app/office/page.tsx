@@ -28,10 +28,10 @@ export default function OfficePage() {
   };
 
   return (
-    <main className="h-screen flex flex-col items-center justify-center gap-6 px-6">
+    <main className="h-screen flex flex-col items-center justify-center gap-2 px-6">
       <TextBlock text={COPY.office.lines[step]} delay={TIMING.short} />
 
-      <div className="flex flex-col gap-4 mt-6 w-full max-w-sm">
+      <div className="flex flex-col gap-2 mt-6 w-full max-w-sm">
         {!showEaster && (
           <Button onClick={handleClick}>
             {step < COPY.office.lines.length - 1 ? "Next" : COPY.office.cta}

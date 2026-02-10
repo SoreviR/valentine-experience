@@ -24,17 +24,17 @@ export const COPY = {
       {
         id: "jolteon",
         label: "Jolteon",
-        text: "You make things feel exciting. A little dangerous.",
+        text: "You make things feel exciting.",
       },
       {
         id: "sylveon",
         label: "Sylveon",
-        text: "There’s something between us. And we both feel it.",
+        text: "We can be honest with each other without making it complicated.",
       },
       {
         id: "vaporeon",
         label: "Vaporeon",
-        text: "Being with you feels calm. And addictive.",
+        text: "Knowing I’ll hear from you makes my days better.",
       },
     ],
     cta: "Continue",
@@ -51,6 +51,7 @@ export const COPY = {
   beak: {
     confirmation:
       "Sometimes nothing else needs to be said. Just a quiet confirmation that we want to keep going.",
+    info: "- Remember Schrute courship ritual -",
 
     continue: "Continue",
   },
@@ -68,6 +69,6 @@ export const COPY = {
       "It suits you.",
     ],
     giftText: "Here’s your Valentine’s reward:",
-    buttonText: "Close",
+    buttonText: "Reveal",
   },
 };

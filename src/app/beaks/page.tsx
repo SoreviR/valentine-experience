@@ -28,23 +28,32 @@ export default function BeaksPage() {
   const allCrushed = crushed.every(Boolean);
 
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen px-6 text-center gap-10">
-      {/* COPY */}
-      <TextBlock text={COPY.beak.confirmation} />
+    <main className="min-h-screen flex flex-col px-6 text-center">
+      {/* TOP SPACER */}
+      <div className="h-24" />
 
-      {/* BEAKS */}
-      <div className="flex gap-6">
-        {crushed.map((isCrushed, i) => (
-          <Beak key={i} crushed={isCrushed} onClick={() => crushBeak(i)} />
-        ))}
+      {/* CONTENT */}
+      <div className="flex flex-col items-center gap-10 min-h-65">
+        <TextBlock text={COPY.beak.confirmation} />
+        <TextBlock text={COPY.beak.info} style="text-sm italic" />
+
+        <div className="flex gap-6">
+          {crushed.map((isCrushed, i) => (
+            <Beak key={i} crushed={isCrushed} onClick={() => crushBeak(i)} />
+          ))}
+        </div>
       </div>
 
-      {/* CONTINUE */}
-      {allCrushed && (
-        <Button onClick={() => router.push("/focus")}>
-          {COPY.beak.continue}
-        </Button>
-      )}
+      {/* ACTION */}
+      <div className="flex items-start justify-center min-h-20">
+        {allCrushed ? (
+          <Button onClick={() => router.push("/focus")}>
+            {COPY.beak.continue}
+          </Button>
+        ) : (
+          <div className="h-12" />
+        )}
+      </div>
     </main>
   );
 }

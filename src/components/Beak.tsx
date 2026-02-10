@@ -11,6 +11,7 @@ export default function Beak({ crushed, onClick }: BeakProps) {
       onClick={onClick}
       disabled={crushed}
       className={`
+        cursor-pointer
         w-24 h-24
         transition-all duration-300 ease-out
         ${crushed ? "scale-75 opacity-40" : "hover:scale-105"}
