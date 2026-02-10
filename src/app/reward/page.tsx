@@ -5,6 +5,7 @@ import TextBlock from "@/components/TexBlock";
 import Button from "@/components/Button";
 import { COPY } from "@/lib/copy";
 import { TIMING } from "@/lib/timings";
+import confetti from "canvas-confetti";
 
 type Selection = {
   herNumber?: number;
@@ -13,6 +14,7 @@ type Selection = {
   mySign?: string;
 };
 
+// Datos hardcodeados para puzzle
 const CORRECT_ANSWER: Selection = {
   herNumber: 5,
   myNumber: 13,
@@ -24,20 +26,47 @@ export default function RewardPage() {
   const [step, setStep] = useState(0);
   const [selection, setSelection] = useState<Selection>({});
   const [error, setError] = useState(false);
-  const [unlocked, setUnlocked] = useState(
-    typeof window !== "undefined"
-      ? localStorage.getItem("reward_unlocked") === "true"
-      : false,
-  );
+  const [unlocked, setUnlocked] = useState(false);
 
   const TOTAL_STEPS = COPY.reward.lines.length;
 
+  // Confeti reutilizable
+  const launchConfetti = () => {
+    const duration = 1500;
+    const end = Date.now() + duration;
+
+    const frame = () => {
+      confetti({
+        particleCount: 4,
+        startVelocity: 18,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ["#ffffff", "#d4d4d4", "#f5c2c7"],
+        scalar: 0.9,
+      });
+
+      if (Date.now() < end) {
+        requestAnimationFrame(frame);
+      }
+    };
+
+    frame();
+  };
+
+  // Bloquear scroll
   useEffect(() => {
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = "auto";
     };
   }, []);
+
+  // Confeti al desbloquear
+  useEffect(() => {
+    if (!unlocked) return;
+
+    launchConfetti();
+  }, [unlocked]);
 
   const handleNext = () => {
     if (step < TOTAL_STEPS) setStep(step + 1);
@@ -63,8 +92,12 @@ export default function RewardPage() {
       return;
     }
 
-    localStorage.setItem("reward_unlocked", "true");
     setUnlocked(true);
+  };
+
+  const handleFinalButton = () => {
+    launchConfetti();
+    // Aquí puedes añadir cualquier otra acción que quieras al presionar
   };
 
   return (
@@ -84,7 +117,6 @@ export default function RewardPage() {
 
             {/* PUZZLE */}
             <div className="w-full mt-6 p-4 rounded-xl bg-neutral-900 border border-neutral-700 flex flex-col gap-5">
-              {/* Her number */}
               <PuzzleGroup
                 label="Bailey girl favorite number"
                 options={[3, 5, 8]}
@@ -92,7 +124,6 @@ export default function RewardPage() {
                 onSelect={(v) => setSelection((s) => ({ ...s, herNumber: v }))}
               />
 
-              {/* Your number */}
               <PuzzleGroup
                 label="His favorite number"
                 options={[7, 11, 13]}
@@ -100,7 +131,6 @@ export default function RewardPage() {
                 onSelect={(v) => setSelection((s) => ({ ...s, myNumber: v }))}
               />
 
-              {/* Her sign */}
               <PuzzleGroup
                 label="Bailey girl zodiac sign"
                 options={["Libra", "Leo", "Gemini"]}
@@ -108,7 +138,6 @@ export default function RewardPage() {
                 onSelect={(v) => setSelection((s) => ({ ...s, herSign: v }))}
               />
 
-              {/* Your sign */}
               <PuzzleGroup
                 label="His zodiac sign"
                 options={["Pisces", "Scorpio", "Cancer"]}
@@ -130,12 +159,19 @@ export default function RewardPage() {
         ) : (
           <>
             <TextBlock text={COPY.reward.giftText} delay={TIMING.short} />
+            <TextBlock
+              text="Let me know the secret phrase to redeem your gift"
+              delay={TIMING.short}
+              style="italic"
+            />
 
-            <div className="mt-6 p-4 bg-neutral-800 rounded-xl text-center text-neutral-200 font-mono tracking-widest">
-              💝 YOUR SECRET REWARD 💝
+            <div className="mt-6 p-4 bg-neutral-800 rounded-xl text-center text-neutral-200 font-mono tracking-widest shadow-[0_0_30px_rgba(255,255,255,0.15)]">
+              - DADY I'M CALIENTE -
             </div>
 
-            <Button>{COPY.reward.buttonText}</Button>
+            <Button onClick={handleFinalButton}>
+              {COPY.reward.buttonText}
+            </Button>
           </>
         )}
       </div>
