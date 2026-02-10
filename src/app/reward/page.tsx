@@ -13,31 +13,27 @@ type Selection = {
   mySign?: string;
 };
 
-function shuffle<T>(array: T[]) {
-  return [...array].sort(() => Math.random() - 0.5);
-}
+const CORRECT_ANSWER: Selection = {
+  herNumber: 5,
+  myNumber: 13,
+  herSign: "Libra",
+  mySign: "Pisces",
+};
 
 export default function RewardPage() {
   const [step, setStep] = useState(0);
   const [selection, setSelection] = useState<Selection>({});
   const [error, setError] = useState(false);
-  const [code, setCode] = useState<string | null>(null);
-
-  // Randomized options
-  const [herNumbers] = useState<number[]>(() => shuffle([3, 5, 8]));
-  const [myNumbers] = useState<number[]>(() => shuffle([7, 11, 13]));
-  const [herSigns] = useState<string[]>(() =>
-    shuffle(["Libra", "Leo", "Gemini"]),
-  );
-  const [mySigns] = useState<string[]>(() =>
-    shuffle(["Pisces", "Scorpio", "Cancer"]),
+  const [unlocked, setUnlocked] = useState(
+    typeof window !== "undefined"
+      ? localStorage.getItem("reward_unlocked") === "true"
+      : false,
   );
 
   const TOTAL_STEPS = COPY.reward.lines.length;
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
-
     return () => {
       document.body.style.overflow = "auto";
     };
@@ -50,25 +46,25 @@ export default function RewardPage() {
   const isComplete =
     selection.herNumber !== undefined &&
     selection.myNumber !== undefined &&
-    selection.herSign !== undefined &&
-    selection.mySign !== undefined;
+    selection.herSign &&
+    selection.mySign;
 
-  const submitPuzzle = async () => {
+  const submitPuzzle = () => {
     setError(false);
 
-    const res = await fetch("/api/reward", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(selection),
-    });
+    const isCorrect =
+      selection.herNumber === CORRECT_ANSWER.herNumber &&
+      selection.myNumber === CORRECT_ANSWER.myNumber &&
+      selection.herSign === CORRECT_ANSWER.herSign &&
+      selection.mySign === CORRECT_ANSWER.mySign;
 
-    if (!res.ok) {
+    if (!isCorrect) {
       setError(true);
       return;
     }
 
-    const data = await res.json();
-    setCode(data.code);
+    localStorage.setItem("reward_unlocked", "true");
+    setUnlocked(true);
   };
 
   return (
@@ -79,115 +75,46 @@ export default function RewardPage() {
             <TextBlock text={COPY.reward.lines[step]} delay={TIMING.short} />
             <Button onClick={handleNext}>Next</Button>
           </>
-        ) : !code ? (
+        ) : !unlocked ? (
           <>
             <TextBlock
               text="Some things only work when you remember the little details."
               delay={TIMING.short}
             />
 
+            {/* PUZZLE */}
             <div className="w-full mt-6 p-4 rounded-xl bg-neutral-900 border border-neutral-700 flex flex-col gap-5">
               {/* Her number */}
-              <div>
-                <p className="text-sm text-neutral-400 mb-2">
-                  Bailey girl favorite number
-                </p>
-                <div className="flex gap-2">
-                  {herNumbers.map((n) => (
-                    <button
-                      key={n}
-                      onClick={() => {
-                        setError(false);
-                        setSelection((s) => ({ ...s, herNumber: n }));
-                      }}
-                      className={`flex-1 py-2 rounded-lg border transition
-                        ${
-                          selection.herNumber === n
-                            ? "border-neutral-300 bg-neutral-800"
-                            : "border-neutral-700"
-                        }`}
-                    >
-                      {n}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <PuzzleGroup
+                label="Bailey girl favorite number"
+                options={[3, 5, 8]}
+                selected={selection.herNumber}
+                onSelect={(v) => setSelection((s) => ({ ...s, herNumber: v }))}
+              />
 
-              {/* His number */}
-              <div>
-                <p className="text-sm text-neutral-400 mb-2">
-                  His favorite number
-                </p>
-                <div className="flex gap-2">
-                  {myNumbers.map((n) => (
-                    <button
-                      key={n}
-                      onClick={() => {
-                        setError(false);
-                        setSelection((s) => ({ ...s, myNumber: n }));
-                      }}
-                      className={`flex-1 py-2 rounded-lg border transition
-                        ${
-                          selection.myNumber === n
-                            ? "border-neutral-300 bg-neutral-800"
-                            : "border-neutral-700"
-                        }`}
-                    >
-                      {n}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              {/* Your number */}
+              <PuzzleGroup
+                label="His favorite number"
+                options={[7, 11, 13]}
+                selected={selection.myNumber}
+                onSelect={(v) => setSelection((s) => ({ ...s, myNumber: v }))}
+              />
 
               {/* Her sign */}
-              <div>
-                <p className="text-sm text-neutral-400 mb-2">
-                  Bailey girl zodiac sign
-                </p>
-                <div className="flex gap-2">
-                  {herSigns.map((sign) => (
-                    <button
-                      key={sign}
-                      onClick={() => {
-                        setError(false);
-                        setSelection((s) => ({ ...s, herSign: sign }));
-                      }}
-                      className={`flex-1 py-2 rounded-lg border transition
-                        ${
-                          selection.herSign === sign
-                            ? "border-neutral-300 bg-neutral-800"
-                            : "border-neutral-700"
-                        }`}
-                    >
-                      {sign}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <PuzzleGroup
+                label="Bailey girl zodiac sign"
+                options={["Libra", "Leo", "Gemini"]}
+                selected={selection.herSign}
+                onSelect={(v) => setSelection((s) => ({ ...s, herSign: v }))}
+              />
 
-              {/* His sign */}
-              <div>
-                <p className="text-sm text-neutral-400 mb-2">His zodiac sign</p>
-                <div className="flex gap-2">
-                  {mySigns.map((sign) => (
-                    <button
-                      key={sign}
-                      onClick={() => {
-                        setError(false);
-                        setSelection((s) => ({ ...s, mySign: sign }));
-                      }}
-                      className={`flex-1 py-2 rounded-lg border transition
-                        ${
-                          selection.mySign === sign
-                            ? "border-neutral-300 bg-neutral-800"
-                            : "border-neutral-700"
-                        }`}
-                    >
-                      {sign}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              {/* Your sign */}
+              <PuzzleGroup
+                label="His zodiac sign"
+                options={["Pisces", "Scorpio", "Cancer"]}
+                selected={selection.mySign}
+                onSelect={(v) => setSelection((s) => ({ ...s, mySign: v }))}
+              />
             </div>
 
             {error && (
@@ -203,20 +130,51 @@ export default function RewardPage() {
         ) : (
           <>
             <TextBlock text={COPY.reward.giftText} delay={TIMING.short} />
-            <TextBlock
-              text="Let me know the secret phrase!"
-              delay={TIMING.short}
-              style="italic"
-            />
 
             <div className="mt-6 p-4 bg-neutral-800 rounded-xl text-center text-neutral-200 font-mono tracking-widest">
-              {code}
+              💝 YOUR SECRET REWARD 💝
             </div>
 
-            <Button onClick={() => {}}>{COPY.reward.buttonText}</Button>
+            <Button>{COPY.reward.buttonText}</Button>
           </>
         )}
       </div>
     </main>
+  );
+}
+
+/* ---------- Helper ---------- */
+
+function PuzzleGroup<T extends string | number>({
+  label,
+  options,
+  selected,
+  onSelect,
+}: {
+  label: string;
+  options: T[];
+  selected?: T;
+  onSelect: (value: T) => void;
+}) {
+  return (
+    <div>
+      <p className="text-sm text-neutral-400 mb-2">{label}</p>
+      <div className="flex gap-2">
+        {options.map((opt) => (
+          <button
+            key={String(opt)}
+            onClick={() => onSelect(opt)}
+            className={`flex-1 py-2 rounded-lg border transition
+              ${
+                selected === opt
+                  ? "border-neutral-300 bg-neutral-800"
+                  : "border-neutral-700"
+              }`}
+          >
+            {opt}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
