@@ -6,165 +6,217 @@ import Button from "@/components/Button";
 import { COPY } from "@/lib/copy";
 import { TIMING } from "@/lib/timings";
 
-type PuzzleState = {
-  herNumber: number | "";
-  myNumber: number | "";
-  herSign: string;
-  mySign: string;
+type Selection = {
+  herNumber?: number;
+  myNumber?: number;
+  herSign?: string;
+  mySign?: string;
 };
+
+function shuffle<T>(array: T[]) {
+  return [...array].sort(() => Math.random() - 0.5);
+}
 
 export default function RewardPage() {
   const [step, setStep] = useState(0);
-  const TOTAL_STEPS = COPY.reward.lines.length;
-
-  const [values, setValues] = useState<PuzzleState>({
-    herNumber: "",
-    myNumber: "",
-    herSign: "",
-    mySign: "",
-  });
-
+  const [selection, setSelection] = useState<Selection>({});
+  const [error, setError] = useState(false);
   const [code, setCode] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+
+  // Randomized options
+  const [herNumbers] = useState<number[]>(() => shuffle([3, 5, 8]));
+  const [myNumbers] = useState<number[]>(() => shuffle([7, 11, 13]));
+  const [herSigns] = useState<string[]>(() =>
+    shuffle(["Libra", "Leo", "Gemini"]),
+  );
+  const [mySigns] = useState<string[]>(() =>
+    shuffle(["Pisces", "Scorpio", "Cancer"]),
+  );
+
+  const TOTAL_STEPS = COPY.reward.lines.length;
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
+
     return () => {
       document.body.style.overflow = "auto";
     };
   }, []);
 
-  const handleClick = () => {
+  const handleNext = () => {
     if (step < TOTAL_STEPS) setStep(step + 1);
   };
 
-  const isSolved =
-    values.herNumber === 5 &&
-    values.myNumber === 13 &&
-    values.herSign === "libra" &&
-    values.mySign === "pisces";
+  const isComplete =
+    selection.herNumber !== undefined &&
+    selection.myNumber !== undefined &&
+    selection.herSign !== undefined &&
+    selection.mySign !== undefined;
 
-  const revealReward = async () => {
-    setLoading(true);
-    setError(null);
+  const submitPuzzle = async () => {
+    setError(false);
 
-    try {
-      const res = await fetch("/api/reward", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
-      });
+    const res = await fetch("/api/reward", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(selection),
+    });
 
-      if (!res.ok) throw new Error("Invalid");
-
-      const data = await res.json();
-      setCode(data.code);
-    } catch {
-      setError("Not yet. Try again.");
-    } finally {
-      setLoading(false);
+    if (!res.ok) {
+      setError(true);
+      return;
     }
+
+    const data = await res.json();
+    setCode(data.code);
   };
 
   return (
-    <main className="h-screen flex flex-col items-center justify-center gap-6 px-6 text-center">
-      {step < TOTAL_STEPS ? (
-        <>
-          <TextBlock text={COPY.reward.lines[step]} delay={TIMING.short} />
-          <Button onClick={handleClick}>Next</Button>
-        </>
-      ) : (
-        <>
-          <TextBlock text={COPY.reward.giftText} delay={TIMING.short} />
+    <main className="h-screen flex flex-col items-center justify-center px-6">
+      <div className="w-full max-w-sm min-h-115 flex flex-col justify-between items-center">
+        {step < TOTAL_STEPS ? (
+          <>
+            <TextBlock text={COPY.reward.lines[step]} delay={TIMING.short} />
+            <Button onClick={handleNext}>Next</Button>
+          </>
+        ) : !code ? (
+          <>
+            <TextBlock
+              text="Some things only work when you remember the little details."
+              delay={TIMING.short}
+            />
 
-          {/* PUZZLE / REWARD AREA */}
-          <div className="flex flex-col gap-4 mt-6 w-full max-w-sm">
-            {/* Numbers */}
-            <select
-              className="p-3 rounded-xl bg-neutral-800 text-neutral-200"
-              value={values.herNumber}
-              onChange={(e) =>
-                setValues({ ...values, herNumber: Number(e.target.value) })
-              }
-            >
-              <option value="" disabled>
-                Your number
-              </option>
-              {[3, 5, 7, 9].map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </select>
-
-            <select
-              className="p-3 rounded-xl bg-neutral-800 text-neutral-200"
-              value={values.myNumber}
-              onChange={(e) =>
-                setValues({ ...values, myNumber: Number(e.target.value) })
-              }
-            >
-              <option value="" disabled>
-                My number
-              </option>
-              {[8, 13, 21].map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </select>
-
-            {/* Signs */}
-            <select
-              className="p-3 rounded-xl bg-neutral-800 text-neutral-200"
-              value={values.herSign}
-              onChange={(e) =>
-                setValues({ ...values, herSign: e.target.value })
-              }
-            >
-              <option value="" disabled>
-                Your sign
-              </option>
-              {["libra", "leo", "virgo"].map((s) => (
-                <option key={s} value={s}>
-                  {s.charAt(0).toUpperCase() + s.slice(1)}
-                </option>
-              ))}
-            </select>
-
-            <select
-              className="p-3 rounded-xl bg-neutral-800 text-neutral-200"
-              value={values.mySign}
-              onChange={(e) => setValues({ ...values, mySign: e.target.value })}
-            >
-              <option value="" disabled>
-                My sign
-              </option>
-              {["pisces", "scorpio", "cancer"].map((s) => (
-                <option key={s} value={s}>
-                  {s.charAt(0).toUpperCase() + s.slice(1)}
-                </option>
-              ))}
-            </select>
-
-            {/* ERROR / CODE */}
-            <div className="min-h-6 text-sm text-neutral-400">{error}</div>
-
-            {code && (
-              <div className="p-4 bg-neutral-800 rounded-xl text-neutral-200 font-mono">
-                {code}
+            <div className="w-full mt-6 p-4 rounded-xl bg-neutral-900 border border-neutral-700 flex flex-col gap-5">
+              {/* Her number */}
+              <div>
+                <p className="text-sm text-neutral-400 mb-2">
+                  Bailey girl favorite number
+                </p>
+                <div className="flex gap-2">
+                  {herNumbers.map((n) => (
+                    <button
+                      key={n}
+                      onClick={() => {
+                        setError(false);
+                        setSelection((s) => ({ ...s, herNumber: n }));
+                      }}
+                      className={`flex-1 py-2 rounded-lg border transition
+                        ${
+                          selection.herNumber === n
+                            ? "border-neutral-300 bg-neutral-800"
+                            : "border-neutral-700"
+                        }`}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </div>
               </div>
+
+              {/* His number */}
+              <div>
+                <p className="text-sm text-neutral-400 mb-2">
+                  His favorite number
+                </p>
+                <div className="flex gap-2">
+                  {myNumbers.map((n) => (
+                    <button
+                      key={n}
+                      onClick={() => {
+                        setError(false);
+                        setSelection((s) => ({ ...s, myNumber: n }));
+                      }}
+                      className={`flex-1 py-2 rounded-lg border transition
+                        ${
+                          selection.myNumber === n
+                            ? "border-neutral-300 bg-neutral-800"
+                            : "border-neutral-700"
+                        }`}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Her sign */}
+              <div>
+                <p className="text-sm text-neutral-400 mb-2">
+                  Bailey girl zodiac sign
+                </p>
+                <div className="flex gap-2">
+                  {herSigns.map((sign) => (
+                    <button
+                      key={sign}
+                      onClick={() => {
+                        setError(false);
+                        setSelection((s) => ({ ...s, herSign: sign }));
+                      }}
+                      className={`flex-1 py-2 rounded-lg border transition
+                        ${
+                          selection.herSign === sign
+                            ? "border-neutral-300 bg-neutral-800"
+                            : "border-neutral-700"
+                        }`}
+                    >
+                      {sign}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* His sign */}
+              <div>
+                <p className="text-sm text-neutral-400 mb-2">His zodiac sign</p>
+                <div className="flex gap-2">
+                  {mySigns.map((sign) => (
+                    <button
+                      key={sign}
+                      onClick={() => {
+                        setError(false);
+                        setSelection((s) => ({ ...s, mySign: sign }));
+                      }}
+                      className={`flex-1 py-2 rounded-lg border transition
+                        ${
+                          selection.mySign === sign
+                            ? "border-neutral-300 bg-neutral-800"
+                            : "border-neutral-700"
+                        }`}
+                    >
+                      {sign}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {error && (
+              <p className="text-sm text-red-400 mt-3">
+                Almost… but not quite. Try again.
+              </p>
             )}
 
-            {!code && (
-              <Button onClick={revealReward} disabled={!isSolved || loading}>
-                {loading ? "Revealing…" : COPY.reward.buttonText}
-              </Button>
-            )}
-          </div>
-        </>
-      )}
+            <Button onClick={submitPuzzle} disabled={!isComplete}>
+              Unlock
+            </Button>
+          </>
+        ) : (
+          <>
+            <TextBlock text={COPY.reward.giftText} delay={TIMING.short} />
+            <TextBlock
+              text="Let me know the secret phrase!"
+              delay={TIMING.short}
+              style="italic"
+            />
+
+            <div className="mt-6 p-4 bg-neutral-800 rounded-xl text-center text-neutral-200 font-mono tracking-widest">
+              {code}
+            </div>
+
+            <Button onClick={() => {}}>{COPY.reward.buttonText}</Button>
+          </>
+        )}
+      </div>
     </main>
   );
 }

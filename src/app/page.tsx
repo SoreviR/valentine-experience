@@ -31,7 +31,7 @@ export default function HomePage() {
 
       {/* Button area with reserved space */}
       <div className="min-h-16 mt-6">
-        <Button onClick={() => router.push("/start")}>Begin</Button>
+        <Button onClick={() => router.push("/start")}>Start</Button>
       </div>
     </main>
   );

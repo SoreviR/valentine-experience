@@ -1,7 +1,7 @@
 export const COPY = {
   start: {
     intro: "I wanted to do something a little different for Valentine’s Day.",
-    cta: "Start",
+    cta: "Begin",
   },
   psyduck: {
     lines: [
@@ -46,7 +46,7 @@ export const COPY = {
       "I really like you. And I wanted you to know.",
     ],
     easterEgg: "That’s what she said.",
-    cta: "Let’s keep moving",
+    cta: "Let’s go deeper",
   },
   beak: {
     confirmation:
@@ -69,6 +69,6 @@ export const COPY = {
       "It suits you.",
     ],
     giftText: "Here’s your Valentine’s reward:",
-    buttonText: "Reveal",
+    buttonText: "Good girl",
   },
 };

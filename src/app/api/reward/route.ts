@@ -22,6 +22,6 @@ export async function POST(req: Request) {
   claimed = true;
 
   return NextResponse.json({
-    code: process.env.STEAM_GIFT_CODE,
+    code: process.env.SECRET_PHRASE,
   });
 }
